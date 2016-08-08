@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="TodoList" extends="Group">
+	<interface>
+	</interface>
+
+	<script type="text/brightscript" uri="pkg:/components/TodoList.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Utilities.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/ActionTypes.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Actions.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Redoku.brs"/>
+
+	<children>
+		<LabelList id="todoLabelList" />
+	</children>
+</component>

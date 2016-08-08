@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="App" extends="Group">
+	<interface>
+	</interface>
+
+	<script type="text/brightscript" uri="pkg:/components/App.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Utilities.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/ActionTypes.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Actions.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Redoku.brs"/>
+
+	<children>
+		<Rectangle translation="[100,100]" width="1800" height="800" color="0x00000000" >
+			<TodoList id="todoList" focusable="true" visible="true" />
+			<Filters id="filters" focusable="true" translation="[600,0]" />
+			<LayoutGroup translation="[1200,0]" itemSpacings="[20]">
+				<Label text="Press 'OK' to complete current item" />
+				<Label text="Press 'play' to add a single item" />
+				<Label text="Press 'replay' to remove current item" />
+				<Label text="Press '*' to add multiple items async" />
+			</LayoutGroup>
+		</Rectangle>
+	</children>
+</component>

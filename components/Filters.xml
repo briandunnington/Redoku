@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="Filters" extends="Group">
+	<interface>
+	</interface>
+
+	<script type="text/brightscript" uri="pkg:/components/Filters.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Utilities.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/ActionTypes.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Actions.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/Redoku.brs"/>
+
+	<children>
+		<LabelList id="filterLabelList">
+			<ContentNode role="content">
+				<ContentNode title="SHOW_ALL" />
+				<ContentNode title="SHOW_COMPLETE" />
+			</ContentNode>
+		</LabelList>
+	</children>
+</component>
