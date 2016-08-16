@@ -7,9 +7,9 @@ state structure and initial values. Pass this to `RedokuSetInitialState()` befor
 showing your root Scene.
 
 In your root scene, call `RedokuRegisterReducer()` for each reducer in your app.
-Note that each reducer should target a 'section' of the overall state, and that
-is the only portion of the state that it will be passed when called. Each 'section'
-that will be handled by a reducer should be an associative array.
+Note that each reducer should target a 'section' (property) of the overall state,
+and that is the only portion of the state that it will be passed when called.
+Each 'section' that will be handled by a reducer must be an associative array.
 
 Ex: For a 'todos' reducer (`RedokuRegisterReducer("todos", todosReducer)`, set up
 your state like this:
@@ -25,7 +25,7 @@ your state like this:
 Not this:
 
 	{
-		todos: [...],
+		todos: [...],  'this should not be an array
 		config: {
 		}
 	}
@@ -38,10 +38,10 @@ Individual components can call any action creator functions to trigger state upd
 Action creator functions should call `RedokuDispatch()` with a single action parameter.
 The action parameter should be an associative array with (at minimum) a `type`
 property and also contain any other properties as appropriate. You can also call
-`RedokuDispatch()` from a Task node at any point during it's execution to report
+`RedokuDispatch()` from a Task node at any point during its execution to report
 asynchronous state changes.
 
-Internally, calls to `RedokuDispatch()` will result in a call to `RedokuDispatchWatcher`
+Internally, calls to `RedokuDispatch()` will result in a call to `RedokuRunReducers`
 which will loop through all registered reducers and provide them with an opportunity
 to modify the state. If a given reducer does not respond to the action specified,
 simply return the passed-in state parameter. If the reducer needs to modify the state,
