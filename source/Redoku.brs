@@ -35,16 +35,27 @@ function RedokuInitialize()
 end function
 
 'Call this from any action creator to trigger a reducer cycle
-function RedokuDispatch(action as object)
+sub RedokuDispatch(action as object)
+	pre = m.global.dispatch.queue.count()
 	dispatch = m.global.dispatch
 	dispatch.queue.push(action)
+	post = m.global.dispatch.queue.count()
+	'TODO: come up with a better solution for this.
+	'If multiple threads dispatch actions at the same time, there can be a race condition.
+	'Since we have to copy the queue, modify it, and copy it back to the global node,
+	'it can cause the wrong data to be written.
+	'The temporary work-around is to check the queue count at the beginning of the operation
+	'and again at the end to see if anybody else has modified the queue in the meantime.
+	if NOT post = pre
+		RedokuDispatch(action)
+		return
+	end if
 	m.global.dispatch = dispatch
 
 	if(m.global.dispatch.queue.count() > 0)
-		m.global.dispatch.timer.control = "stop"
 		m.global.dispatch.timer.control = "start"
 	end if
-end function
+end sub
 
 'Call this from any reducer to clone the state
 function RedokuClone(obj as object) as object
@@ -65,9 +76,9 @@ function RedokuDispatchTimerFired()
 	dispatch = m.global.dispatch
 	if(dispatch.queue.count() > 0)
 		action = dispatch.queue.shift()
+		m.global.dispatch = dispatch
 		RedokuRunReducers(action)
 	end if
-	m.global.dispatch = dispatch
 	' If there are still events to process, start the timer again.
 	if(m.global.dispatch.queue.count() > 0)
 		m.global.dispatch.timer.control = "start"
@@ -91,10 +102,10 @@ function RedokuRunReducers(action as object)
 			end if
 		end for
 		if didChange
-			?"State changed"
+			'?"Redoku: State changed"
 			m.global.state = state
 		else
-			?"State did not change"
+			'?"Redoku: State did not change"
 		end if
 	end if
 end function
