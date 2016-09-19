@@ -4,21 +4,21 @@
 ' m.reducers live only in the root scene
 
 'Call this from your main() function before you create your root scene.
-function RedokuSetInitialState(initialState as object, screen as object)
+sub RedokuSetInitialState(initialState as object, screen as object)
 	m.global = screen.GetGlobalNode()
 	m.global.addFields({
 		state: RedokuClone(initialState)
 	})
-end function
+end sub
 
 'Call this from your root scene BEFORE you call RedokuInitialize
-function RedokuRegisterReducer(section as string, reducer as function)
+sub RedokuRegisterReducer(section as string, reducer as function)
 	if NOT IsValid(m.reducers) then m.reducers = {}
 	m.reducers[section] = reducer
-end function
+end sub
 
 'Call this from your root scene AFTER you have registered any reducers
-function RedokuInitialize()
+sub RedokuInitialize()
 	dispatchTimer = createObject("roSGNode", "Timer")
 	dispatchTimer.duration = .01
 	dispatchTimer.repeat = false
@@ -32,7 +32,7 @@ function RedokuInitialize()
 	})
 
 	RedokuDispatch(invalid)
-end function
+end sub
 
 'Call this from any action creator to trigger a reducer cycle
 sub RedokuDispatch(action as object)
@@ -60,19 +60,22 @@ end sub
 'Call this from any reducer to clone the state
 function RedokuClone(obj as object) as object
 	newObj = {}
-	for each prop in obj
-		newObj[prop] = obj[prop]
-	end for
+	if IsValid(obj)
+		for each prop in obj
+			newObj[prop] = obj[prop]
+		end for
+	end if
 	newObj.__RedokuStateId = Str(Rnd(0))
 	return newObj
 end function
+
 
 '-------------------------------------------------------------------------------------
 'Do not call the functions below here. They are called internally by the Redoku logic.
 '-------------------------------------------------------------------------------------
 
 'Do not call this - it is called automatically when RedokuDispatch is called
-function RedokuDispatchTimerFired()
+sub RedokuDispatchTimerFired()
 	dispatch = m.global.dispatch
 	if(dispatch.queue.count() > 0)
 		action = dispatch.queue.shift()
@@ -83,13 +86,12 @@ function RedokuDispatchTimerFired()
 	if(m.global.dispatch.queue.count() > 0)
 		m.global.dispatch.timer.control = "start"
 	end if
-end function
+end sub
 
 'Do not call this - it is called automatically when RedokuDispatch is called
-function RedokuRunReducers(action as object)
+sub RedokuRunReducers(action as object)
 	if IsValid(m.reducers)
 		didChange = false
-		'action = m.global.dispatch
 		state = m.global.state
 		for each reducerKey in m.reducers
 			section = reducerKey
@@ -108,14 +110,24 @@ function RedokuRunReducers(action as object)
 			'?"Redoku: State did not change"
 		end if
 	end if
-end function
+end sub
 
 'Do not call this - it is only used to determine if the state has changed
 'since Roku does not support object comparison.
 function RedokuCompareState(oldState as object, newState as object) as boolean
 	'return FormatJSON(oldState) = FormatJSON(newState)
 
-	if IsInvalid(oldState) then oldState = {}
-	if IsInvalid(newState) then newState = {}
-	return oldState.__RedokuStateId = newState.__RedokuStateId
+	oldStateIsValid = IsValid(oldState)
+	newStateIsValid = IsValid(newState)
+	'Equal if:
+	'both invalid
+	'both valid AND dont have __RedokuStateId
+	'both valid AND have __RedokuStateId AND ==
+	if NOT oldStateIsValid AND NOT newStateIsValid then return true
+	if oldStateIsValid AND newStateIsValid
+		if NOT oldState.DoesExist("__RedokuStateId") AND NOT newState.DoesExist("__RedokuStateId") return true
+		return oldState.__RedokuStateId = newState.__RedokuStateId
+	end if
+	'Otherwise, not equal
+	return false
 end function
