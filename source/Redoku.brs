@@ -108,8 +108,8 @@ sub RedokuRunReducers(action as object)
         end for
         if didChange
             '?"Redoku: State changed"
-            m.global.state = state
             m.global.prevState = prevState
+            m.global.state = state
         else
             '?"Redoku: State did not change"
         end if
