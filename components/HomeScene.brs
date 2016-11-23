@@ -21,7 +21,7 @@ end function
 'if the state has not changed, return it as-is, otherwise clone it with
 'RedokuClone() and return an updated copy.
 function todosReducer(state as dynamic, action as object) as object
-	if IsValid(action)
+	if action <> invalid
 		if action.type = ActionTypes().ADD_TODO
 			items = []
 			for i=0 to state.items.Count() - 1
@@ -80,7 +80,7 @@ function todosReducer(state as dynamic, action as object) as object
 end function
 
 function visibilityFilterReducer(state as dynamic, action as object) as object
-	if IsValid(action)
+	if action <> invalid
 		if action.type = ActionTypes().SET_VISIBILITY_FILTER
 			if NOT state.current = action.filter
 				newState = RedokuClone(state)

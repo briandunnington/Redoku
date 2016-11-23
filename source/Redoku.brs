@@ -14,7 +14,7 @@ end sub
 
 'Call this from your root scene BEFORE you call RedokuInitialize
 sub RedokuRegisterReducer(section as string, reducer as function)
-    if NOT IsValid(m.reducers) then m.reducers = {}
+    if m.reducers = invalid then m.reducers = {}
     m.reducers[section] = reducer
 end sub
 
@@ -61,7 +61,7 @@ end sub
 'Call this from any reducer to clone the state
 function RedokuClone(obj as object) as object
     newObj = {}
-    if IsValid(obj)
+    if obj <> invalid
         for each prop in obj
             newObj[prop] = obj[prop]
         end for
@@ -91,7 +91,7 @@ end sub
 
 'Do not call this - it is called automatically when RedokuDispatch is called
 sub RedokuRunReducers(action as object)
-    if IsValid(m.reducers)
+    if m.reducers <> invalid
         didChange = false
         state = m.global.state
         prevState = state
@@ -121,8 +121,8 @@ end sub
 function RedokuCompareState(oldState as object, newState as object) as boolean
     'return FormatJSON(oldState) = FormatJSON(newState)
 
-    oldStateIsValid = IsValid(oldState)
-    newStateIsValid = IsValid(newState)
+    oldStateIsValid = (oldState <> invalid)
+    newStateIsValid = (newState <> invalid)
     'Equal if:
     'both invalid
     'both valid AND dont have __RedokuStateId

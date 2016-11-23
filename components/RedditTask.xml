@@ -3,7 +3,6 @@
 	<interface>
 	</interface>
 	<script type="text/brightscript" uri="pkg:/components/RedditTask.brs"/>
-	<script type="text/brightscript" uri="pkg:/source/Utilities.brs"/>
 	<script type="text/brightscript" uri="pkg:/source/ActionTypes.brs"/>
 	<script type="text/brightscript" uri="pkg:/source/Actions.brs"/>
 	<script type="text/brightscript" uri="pkg:/source/Redoku.brs"/>
