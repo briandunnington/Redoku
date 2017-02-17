@@ -1,7 +1,17 @@
 'THINGS TO NOTE:
-' m.global.state contains the state store (m.global.prevState contains the previous state) and are the only things you should access outside of this file.
-' m.global.dispatch contains the dispatched action queue and timer (so that actions can be safely dispatched serially)
-' m.reducers live only in the root scene
+' The only functions you should access outside of this file are:
+'   * RedokuSetInitialState()
+'   * RedokuRegisterReducer()
+'   * RedokuInitialize()
+'   * RedokuDispatch()
+'   * RedokuClone()
+'   * RedokuGetState()
+'   * RedokuGetPrevState()
+'   * IsRedokuActionQueued()
+'
+' RedokuGetState() contains the state store (RedokuGetPrevState() contains the previous state) and are intended to be accessed outside this file.
+' m.global.dispatch contains the dispatched action queue and timer (so that actions can be safely dispatched serially).
+' m.reducers live only in the root scene to maintain consistent execution context.
 
 'Call this from your main() function before you create your root scene.
 sub RedokuSetInitialState(initialState as object, screen as object)
@@ -61,13 +71,40 @@ end sub
 'Call this from any reducer to clone the state
 function RedokuClone(obj as object) as object
     newObj = {}
-    if obj <> invalid
+
+    if type(obj) = "roAssociativeArray"
         for each prop in obj
             newObj[prop] = obj[prop]
         end for
+        newObj.__RedokuStateId = RedokuNewId()
+    else if type(obj) = "roArray"
+        size = obj.count()
+        dim newObj[size]
+        for i = 0 to size-1
+            newObj[i] = obj[i]
+        end for
+    else if type(obj) = "roSGNode"
+        fields = obj.GetFields()
+        id = fields.id
+        fields.__RedokuStateId = RedokuNewId()
+        fields.delete("id")
+        newObj = createObject("roSGNode", "ContentNode")
+        newObj.id = id
+        newObj.addFields(fields)
     end if
-    newObj.__RedokuStateId = Str(Rnd(0))
     return newObj
+end function
+
+function RedokuGetState()
+    return m.global.state
+end function
+
+function RedokuGetPrevState()
+    return m.global.prevState
+end function
+
+function IsRedokuActionQueued()
+    return m.global.dispatch.queue.count() > 0
 end function
 
 
@@ -91,28 +128,31 @@ end sub
 
 'Do not call this - it is called automatically when RedokuDispatch is called
 sub RedokuRunReducers(action as object)
-    if m.reducers <> invalid
-        didChange = false
-        state = m.global.state
-        prevState = state
-        for each reducerKey in m.reducers
-            section = reducerKey
-            reducer = m.reducers[reducerKey]
-            oldState = state[section]
-            newState = reducer(state[section], action)
-            if NOT RedokuCompareState(oldState, newState)
-                state = RedokuClone(state)
-                state[section] = newState
-                didChange = true
-            end if
-        end for
-        if didChange
-            '?"Redoku: State changed"
-            m.global.prevState = prevState
-            m.global.state = state
-        else
-            '?"Redoku: State did not change"
+    if m.reducers = invalid
+        '?"Redoku: reducers were invalid"
+        return
+    else if action = invalid OR action.type = invalid
+        '?"Redoku: action or action type was invalid"
+        return
+    end if
+
+    didChange = false
+    state = RedokuGetState()
+    prevState = state
+    for each reducerKey in m.reducers
+        section = reducerKey
+        reducer = m.reducers[reducerKey]
+        oldState = state[section]
+        newState = reducer(oldState, action)
+        if newState = invalid then newState = m.global.initialState[section]
+        if NOT RedokuCompareState(oldState, newState)
+            state = RedokuClone(state)
+            state[section] = newState
+            didChange = true
         end if
+    end for
+    if didChange
+        RedokuSetState(state)
     end if
 end sub
 
@@ -134,4 +174,16 @@ function RedokuCompareState(oldState as object, newState as object) as boolean
     end if
     'Otherwise, not equal
     return false
+end function
+
+sub RedokuSetState(newState)
+    globals = m.global
+    globals.prevState = RedokuGetState()
+    globals.state = newState
+end sub
+
+' Returns an id, probably unique but not guaranteed.  Faster than
+' roDeviceInfo's GetRandomUUID().  Collision chance: 0.00000000046566129%
+function RedokuNewId()
+    return strI(rnd(2147483647), 36)
 end function
